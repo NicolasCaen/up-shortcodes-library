@@ -110,9 +110,25 @@ Ces mixins peuvent être **remplacés** en pointant vers un autre fichier (voir 
 ## Limitations & Notes
 
 - Si la compilation SCSS échoue ou si `scssphp` est indisponible, le champ CSS compilé peut être vide; la génération de CSS respectera l’état compilé actuel.
-- Le fichier PHP généré est automatiquement préfixé par `<?php` si la balise d’ouverture est absente.
 - Les fonctions WordPress (e.g. `add_shortcode`) doivent être valides dans le fichier PHP généré.
 
 ## Licence
 
 Ce plugin est fourni dans le cadre du projet et peut être adapté selon vos besoins.
+
+## Changelog
+
+### 1.1.0 — 2025-09-26
+- Nouvelles options de sortie: calcul automatique du dossier de génération via `base_location` (thème / mu-plugins / ce plugin / personnalisé) et `relative_subdir`.
+- UI réglages: le champ « Chemin personnalisé » est masqué/désactivé sauf si « Chemin personnalisé » est sélectionné.
+- Robustesse chemins MU‑plugins: garde‑fous si certaines constantes WP ne sont pas définies lors de l’analyse statique.
+- Import/Export:
+  - Export déplacé vers `admin-post.php` pour éviter « headers already sent ».
+  - Ajout du bouton « Importer les shortcodes par défaut (plugin) » lisant `defaults/up-shortcodes-default.xml`.
+  - Export enrichi: inclut les flags `_up_sl_generate_*_file`; import compatible (avec rétro‑compatibilité sur `_up_sl_generate_file`).
+- Versionnage assets admin via `UP_SL_VERSION`.
+
+### 1.0.0 — 2025-09-01
+- Version initiale: CPT `up-shortcodes`, édition PHP/JS/SCSS, compilation SCSS→CSS, génération de fichiers, metabox options.
+
+[Changelog complet](https://github.com/gehin/up-shortcodes-library/blob/master/CHANGELOG.md)

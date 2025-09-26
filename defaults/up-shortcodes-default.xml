@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shortcodes>
+  <item>
+    <post>
+      <title>Shortcode Hello</title>
+      <slug>shortcode-hello</slug>
+      <status>publish</status>
+      <content><![CDATA[Shortcode d'exemple généré par défaut.]]></content>
+      <excerpt><![CDATA[Renvoie un texte simple via le shortcode [hello].]]></excerpt>
+    </post>
+    <meta>
+      <php_code><![CDATA[<?php
+// Shortcode: [hello]
+add_shortcode('hello', function($atts = []){
+    return 'Hello from UP Shortcodes Library!';
+});
+]]></php_code>
+      <js_code><![CDATA[// JS facultatif pour le shortcode hello
+]]></js_code>
+      <scss_code><![CDATA[// SCSS facultatif pour le shortcode hello
+.hello-shortcode { color: #333; }
+]]></scss_code>
+      <generate_php_file><![CDATA[1]]></generate_php_file>
+      <generate_css_file><![CDATA[1]]></generate_css_file>
+      <generate_js_file><![CDATA[0]]></generate_js_file>
+      <generate_scss_file><![CDATA[0]]></generate_scss_file>
+      <generate_file><![CDATA[1]]></generate_file>
+    </meta>
+  </item>
+</shortcodes>

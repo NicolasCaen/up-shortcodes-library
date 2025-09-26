@@ -2,7 +2,7 @@
 /**
  * Plugin Name: UP Shortcodes Library
  * Description: Gestion des shortcodes via un CPT avec génération automatique de fichiers.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Nicolas Gehin
  * Text Domain: up-shortcodes-library
  */
@@ -11,6 +11,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+define('UP_SL_VERSION', '1.1.0');
 define('UP_SL_PATH', plugin_dir_path(__FILE__));
 define('UP_SL_URL', plugin_dir_url(__FILE__));
 
@@ -30,7 +31,12 @@ function defaults_up_sl_register_settings(): void {
     if (! get_option(UP_SL_OPTION_KEY)) {
         $default_dir = trailingslashit(get_stylesheet_directory()) . 'shortcodes/';
         update_option(UP_SL_OPTION_KEY, [
+            // Utilisé si base_location = custom
             'output_directory' => $default_dir,
+            // Nouveaux réglages v1.1
+            'base_location'    => 'theme',
+            'relative_subdir'  => 'shortcodes',
+            'wrap_in_subfolder'=> '1',
         ]);
     }
 }
@@ -72,8 +78,8 @@ add_action('admin_enqueue_scripts', function($hook){
         wp_enqueue_script('code-editor');
         wp_enqueue_style('code-editor');
 
-        wp_enqueue_style('up-sl-admin', UP_SL_URL . 'assets/admin.css', [], '1.0.0');
-        wp_enqueue_script('up-sl-admin', UP_SL_URL . 'assets/admin.js', ['jquery', 'code-editor'], '1.0.0', true);
+        wp_enqueue_style('up-sl-admin', UP_SL_URL . 'assets/admin.css', [], UP_SL_VERSION);
+        wp_enqueue_script('up-sl-admin', UP_SL_URL . 'assets/admin.js', ['jquery', 'code-editor'], UP_SL_VERSION, true);
 
         // Passer les settings à JS
         wp_localize_script('up-sl-admin', 'upSLCodeMirrorSettings', [
