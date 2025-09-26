@@ -1,0 +1,13 @@
+/* Styles admin pour UP Shortcodes Library */
+#up_sl_php_code + .CodeMirror,
+#up_sl_js_code + .CodeMirror,
+#up_sl_scss_code + .CodeMirror {
+  border: 1px solid #ccd0d4;
+  min-height: 200px;
+}
+#up_sl_css_code {
+  background: #f8f9fa;
+}
+#up_sl_file_name {
+  font-family: Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+}
