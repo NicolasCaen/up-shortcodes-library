@@ -162,46 +162,7 @@ function up_sl_generate_export_xml(): string {
     ]);
 
     foreach ($posts as $post) {
-        $item = $xml->createElement('item');
-
-        $post_node = $xml->createElement('post');
-        $post_node->appendChild($xml->createElement('title', htmlspecialchars($post->post_title)));
-        $post_node->appendChild($xml->createElement('slug', htmlspecialchars($post->post_name)));
-        $post_node->appendChild($xml->createElement('status', htmlspecialchars($post->post_status)));
-
-        $content_node = $xml->createElement('content');
-        $content_node->appendChild($xml->createCDATASection($post->post_content));
-        $post_node->appendChild($content_node);
-
-        $excerpt_node = $xml->createElement('excerpt');
-        $excerpt_node->appendChild($xml->createCDATASection($post->post_excerpt));
-        $post_node->appendChild($excerpt_node);
-
-        $item->appendChild($post_node);
-
-        $meta_node = $xml->createElement('meta');
-
-        $meta_fields = [
-            'php_code'              => (string) get_post_meta($post->ID, '_up_sl_php_code', true),
-            'js_code'               => (string) get_post_meta($post->ID, '_up_sl_js_code', true),
-            'scss_code'             => (string) get_post_meta($post->ID, '_up_sl_scss_code', true),
-            // Flags de génération (nouvelle logique)
-            'generate_php_file'     => (string) get_post_meta($post->ID, '_up_sl_generate_php_file', true),
-            'generate_css_file'     => (string) get_post_meta($post->ID, '_up_sl_generate_css_file', true),
-            'generate_js_file'      => (string) get_post_meta($post->ID, '_up_sl_generate_js_file', true),
-            'generate_scss_file'    => (string) get_post_meta($post->ID, '_up_sl_generate_scss_file', true),
-            // Compat rétro
-            'generate_file'         => (string) get_post_meta($post->ID, '_up_sl_generate_file', true),
-        ];
-
-        foreach ($meta_fields as $key => $value) {
-            $meta_item = $xml->createElement($key);
-            $meta_item->appendChild($xml->createCDATASection($value));
-            $meta_node->appendChild($meta_item);
-        }
-
-        $item->appendChild($meta_node);
-
+        $item = up_sl_create_xml_item($xml, $post);
         $root->appendChild($item);
     }
 
@@ -265,22 +226,26 @@ function up_sl_import_from_xml(string $xml_string) {
             $php_code      = (string) ($meta->php_code ?? '');
             $js_code       = (string) ($meta->js_code ?? '');
             $scss_code     = (string) ($meta->scss_code ?? '');
+            $readme_code   = (string) ($meta->readme_code ?? '');
             // Nouveaux flags
             $gen_php       = (string) ($meta->generate_php_file ?? '');
             $gen_css       = (string) ($meta->generate_css_file ?? '');
             $gen_js        = (string) ($meta->generate_js_file ?? '');
             $gen_scss      = (string) ($meta->generate_scss_file ?? '');
+            $gen_readme    = (string) ($meta->generate_readme_file ?? '');
             // Compat rétro
             $generate_file = (string) ($meta->generate_file ?? '');
 
             update_post_meta($post_id, '_up_sl_php_code', $php_code);
             update_post_meta($post_id, '_up_sl_js_code', $js_code);
             update_post_meta($post_id, '_up_sl_scss_code', $scss_code);
+            update_post_meta($post_id, '_up_sl_readme_code', $readme_code);
 
             if ($gen_php !== '') update_post_meta($post_id, '_up_sl_generate_php_file', $gen_php === '1' ? '1' : '0');
             if ($gen_css !== '') update_post_meta($post_id, '_up_sl_generate_css_file', $gen_css === '1' ? '1' : '0');
             if ($gen_js !== '')  update_post_meta($post_id, '_up_sl_generate_js_file',  $gen_js  === '1' ? '1' : '0');
             if ($gen_scss !== '')update_post_meta($post_id, '_up_sl_generate_scss_file',$gen_scss=== '1' ? '1' : '0');
+            if ($gen_readme !== '')update_post_meta($post_id, '_up_sl_generate_readme_file',$gen_readme=== '1' ? '1' : '0');
 
             if ($generate_file !== '') {
                 update_post_meta($post_id, '_up_sl_generate_file', $generate_file === '1' ? '1' : '0');
@@ -292,6 +257,115 @@ function up_sl_import_from_xml(string $xml_string) {
     }
 
     return $count;
+}
+
+/**
+ * Crée un noeud XML <item> pour un post donné.
+ */
+function up_sl_create_xml_item(DOMDocument $xml, WP_Post $post): DOMElement {
+    $item = $xml->createElement('item');
+
+    $post_node = $xml->createElement('post');
+    $post_node->appendChild($xml->createElement('title', htmlspecialchars($post->post_title)));
+    $post_node->appendChild($xml->createElement('slug', htmlspecialchars($post->post_name)));
+    $post_node->appendChild($xml->createElement('status', htmlspecialchars($post->post_status)));
+
+    $content_node = $xml->createElement('content');
+    $content_node->appendChild($xml->createCDATASection($post->post_content));
+    $post_node->appendChild($content_node);
+
+    $excerpt_node = $xml->createElement('excerpt');
+    $excerpt_node->appendChild($xml->createCDATASection($post->post_excerpt));
+    $post_node->appendChild($excerpt_node);
+
+    $item->appendChild($post_node);
+
+    $meta_node = $xml->createElement('meta');
+
+    $meta_fields = [
+        'php_code'              => (string) get_post_meta($post->ID, '_up_sl_php_code', true),
+        'js_code'               => (string) get_post_meta($post->ID, '_up_sl_js_code', true),
+        'scss_code'             => (string) get_post_meta($post->ID, '_up_sl_scss_code', true),
+        'readme_code'           => (string) get_post_meta($post->ID, '_up_sl_readme_code', true),
+        // Flags de génération (nouvelle logique)
+        'generate_php_file'     => (string) get_post_meta($post->ID, '_up_sl_generate_php_file', true),
+        'generate_css_file'     => (string) get_post_meta($post->ID, '_up_sl_generate_css_file', true),
+        'generate_js_file'      => (string) get_post_meta($post->ID, '_up_sl_generate_js_file', true),
+        'generate_scss_file'    => (string) get_post_meta($post->ID, '_up_sl_generate_scss_file', true),
+        'generate_readme_file'  => (string) get_post_meta($post->ID, '_up_sl_generate_readme_file', true),
+        // Compat rétro
+        'generate_file'         => (string) get_post_meta($post->ID, '_up_sl_generate_file', true),
+    ];
+
+    foreach ($meta_fields as $key => $value) {
+        $meta_item = $xml->createElement($key);
+        $meta_item->appendChild($xml->createCDATASection($value));
+        $meta_node->appendChild($meta_item);
+    }
+
+    $item->appendChild($meta_node);
+
+    return $item;
+}
+
+/**
+ * Sauvegarde (ajoute ou met à jour) un shortcode dans le fichier XML par défaut du plugin.
+ */
+function up_sl_save_to_defaults(int $post_id): void {
+    $target_file = UP_SL_PATH . 'defaults/up-shortcodes-default.xml';
+    
+    // Créer le dossier defaults s'il n'existe pas
+    $dir = dirname($target_file);
+    if (!file_exists($dir)) {
+        wp_mkdir_p($dir);
+    }
+
+    $xml = new DOMDocument('1.0', 'UTF-8');
+    $xml->preserveWhiteSpace = false;
+    $xml->formatOutput = true;
+
+    if (file_exists($target_file)) {
+        // Charger existant
+        $loaded = @$xml->load($target_file);
+        if (!$loaded) {
+            // Si corrompu ou vide, on repart de zéro
+            $root = $xml->createElement('shortcodes');
+            $xml->appendChild($root);
+        }
+    } else {
+        // Nouveau
+        $root = $xml->createElement('shortcodes');
+        $xml->appendChild($root);
+    }
+
+    $xpath = new DOMXPath($xml);
+    $post = get_post($post_id);
+    if (!$post) return;
+
+    // Vérifier si le slug existe déjà dans le XML
+    $slug = $post->post_name;
+    // On cherche un <slug> qui contient exactement le slug
+    // XPath 1.0 n'est pas très friendly pour ça mais on suppose structure fixe
+    $query = "//item[post/slug='$slug']";
+    $entries = $xpath->query($query);
+
+    // Si trouvé, on supprime l'ancien item
+    if ($entries->length > 0) {
+        $old_item = $entries->item(0);
+        $old_item->parentNode->removeChild($old_item);
+    }
+
+    // Créer le nouvel item
+    // Note: up_sl_create_xml_item attend que le noeud appartienne au document passed
+    // Mais ici le document est $xml (celui qu'on vient de créer/charger)
+    // Donc ça marche si on passe $xml
+    $new_item = up_sl_create_xml_item($xml, $post);
+
+    // Ajouter à la racine (ou <shortcodes>)
+    $xml->documentElement->appendChild($new_item);
+
+    // Sauvegarder
+    $xml->save($target_file);
 }
 
 /**

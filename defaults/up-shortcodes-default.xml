@@ -2,29 +2,343 @@
 <shortcodes>
   <item>
     <post>
-      <title>Shortcode Hello</title>
-      <slug>shortcode-hello</slug>
+      <title>Lotties Hover</title>
+      <slug>lotties-hover</slug>
       <status>publish</status>
-      <content><![CDATA[Shortcode d'exemple généré par défaut.]]></content>
-      <excerpt><![CDATA[Renvoie un texte simple via le shortcode [hello].]]></excerpt>
+      <content><![CDATA[]]></content>
+      <excerpt><![CDATA[]]></excerpt>
     </post>
     <meta>
       <php_code><![CDATA[<?php
-// Shortcode: [hello]
-add_shortcode('hello', function($atts = []){
-    return 'Hello from UP Shortcodes Library!';
-});
+/**
+ * Shortcode Lottie : play on hover / reverse on leave
+ * Usage : [lottie_hover src="/animations/logo8.json" width="185" height="199"]
+ */
+
+function up_lottie_hover_shortcode($atts) {
+  static $instance = 0;
+  $instance++;
+
+  $atts = shortcode_atts([
+    'src'      => '',
+    'width'    => '200',
+    'height'   => '200',
+    'speed'    => '1',
+    'reverse'  => 'true',
+    'loop'     => 'false',
+    'autoplay' => 'false',
+    'class'    => '',
+    'id'       => '',
+    'link'          => '',
+    'hover_trigger' => '',
+    'persist_end'   => 'true',
+    'trigger'       => 'hover', // hover, scroll
+    'full_width'    => 'false',
+  ], $atts);
+
+  if (empty($atts['src'])) {
+    return '';
+  }
+
+  $src = trim($atts['src']);
+  if (preg_match('#^https?://#i', $src) || str_starts_with($src, '//')) {
+    $src_url = $src;
+  } else {
+    $src_url = trailingslashit(get_stylesheet_directory_uri()) . 'assets/lotties/' . ltrim($src, '/');
+  }
+
+  // Charger lottie-web (CDN)
+  wp_enqueue_script(
+    'lottie-web',
+    'https://unpkg.com/lottie-web/build/player/lottie.min.js',
+    [],
+    null,
+    true
+  );
+
+  // Charger ScrollTrigger (GSAP) si trigger=scroll
+  if ($atts['trigger'] === 'scroll') {
+      wp_enqueue_script('gsap', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js', array(), '3.12.5', true);
+      wp_enqueue_script('gsap-scroll-trigger', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js', array('gsap'), '3.12.5', true);
+  }
+
+  // Charger notre script JS dédié
+  wp_enqueue_script(
+    'up-lottie-hover-script',
+    get_stylesheet_directory_uri() . '/shortcodes/shortcode-lotties-hover/assets/js/lottie-hover.js',
+    ['lottie-web'], // Dépendance
+    '1.1',
+    true
+  );
+
+  // Gestion de l'ID et des classes
+  $container_id = !empty($atts['id']) ? $atts['id'] : 'lottie-hover-' . $instance;
+  $classes = 'lottie-hover-container';
+  if (!empty($atts['class'])) {
+    $classes .= ' ' . $atts['class'];
+  }
+  
+  // Préparation des data attributes
+  $speed    = esc_attr($atts['speed']);
+  $reverse  = filter_var($atts['reverse'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $loop     = filter_var($atts['loop'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $autoplay = filter_var($atts['autoplay'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $trigger_sel = !empty($atts['hover_trigger']) ? $atts['hover_trigger'] : '';
+  
+  $persist_end = filter_var($atts['persist_end'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $trigger_type = in_array($atts['trigger'], ['hover', 'scroll']) ? $atts['trigger'] : 'hover';
+  $full_width = filter_var($atts['full_width'], FILTER_VALIDATE_BOOLEAN);
+
+  // Style calculations
+  $style = '';
+  if ($full_width) {
+      $style = 'width: 100%; height: auto;';
+  } else {
+      $style = 'width:' . esc_attr($atts['width']) . 'px;height:' . esc_attr($atts['height']) . 'px;';
+  }
+
+  ob_start(); 
+  
+  // Wrapper lien (ouverture)
+  if (!empty($atts['link'])) {
+    echo '<a href="' . esc_url($atts['link']) . '" class="lottie-hover-link">';
+  }
+  ?>
+    <div
+      id="<?php echo esc_attr($container_id); ?>"
+      class="<?php echo esc_attr($classes); ?>"
+      style="<?php echo $style; ?>"
+      data-src="<?php echo esc_url($src_url); ?>"
+      data-speed="<?php echo $speed; ?>"
+      data-reverse="<?php echo $reverse; ?>"
+      data-loop="<?php echo $loop; ?>"
+      data-autoplay="<?php echo $autoplay; ?>"
+      data-hover-trigger="<?php echo $trigger_sel; ?>"
+      data-persist-end="<?php echo $persist_end; ?>"
+      data-trigger="<?php echo $trigger_type; ?>"
+      data-full-width="<?php echo $full_width ? 'true' : 'false'; ?>">
+    </div>
+  <?php
+  
+  // Wrapper lien (fermeture)
+  if (!empty($atts['link'])) {
+    echo '</a>';
+  }
+
+  return ob_get_clean();
+}
+
+add_shortcode('lottie_hover', 'up_lottie_hover_shortcode');
+
+
 ]]></php_code>
-      <js_code><![CDATA[// JS facultatif pour le shortcode hello
+      <js_code><![CDATA[<?php
+/**
+ * Shortcode Lottie : play on hover / reverse on leave
+ * Usage : [lottie_hover src="/animations/logo8.json" width="185" height="199"]
+ */
+
+function up_lottie_hover_shortcode($atts) {
+  static $instance = 0;
+  $instance++;
+
+  $atts = shortcode_atts([
+    'src'      => '',
+    'width'    => '200',
+    'height'   => '200',
+    'speed'    => '1',
+    'reverse'  => 'true',
+    'loop'     => 'false',
+    'autoplay' => 'false',
+    'class'    => '',
+    'id'       => '',
+    'link'          => '',
+    'hover_trigger' => '',
+    'persist_end'   => 'true',
+    'trigger'       => 'hover', // hover, scroll
+    'full_width'    => 'false',
+  ], $atts);
+
+  if (empty($atts['src'])) {
+    return '';
+  }
+
+  $src = trim($atts['src']);
+  if (preg_match('#^https?://#i', $src) || str_starts_with($src, '//')) {
+    $src_url = $src;
+  } else {
+    $src_url = trailingslashit(get_stylesheet_directory_uri()) . 'assets/lotties/' . ltrim($src, '/');
+  }
+
+  // Charger lottie-web (CDN)
+  wp_enqueue_script(
+    'lottie-web',
+    'https://unpkg.com/lottie-web/build/player/lottie.min.js',
+    [],
+    null,
+    true
+  );
+
+  // Charger ScrollTrigger (GSAP) si trigger=scroll
+  if ($atts['trigger'] === 'scroll') {
+      wp_enqueue_script('gsap', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js', array(), '3.12.5', true);
+      wp_enqueue_script('gsap-scroll-trigger', 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js', array('gsap'), '3.12.5', true);
+  }
+
+  // Charger notre script JS dédié
+  wp_enqueue_script(
+    'up-lottie-hover-script',
+    get_stylesheet_directory_uri() . '/shortcodes/shortcode-lotties-hover/assets/js/shortcode-lottie-hover.js',
+    ['lottie-web'], // Dépendance
+    '1.1',
+    true
+  );
+
+  // Gestion de l'ID et des classes
+  $container_id = !empty($atts['id']) ? $atts['id'] : 'lottie-hover-' . $instance;
+  $classes = 'lottie-hover-container';
+  if (!empty($atts['class'])) {
+    $classes .= ' ' . $atts['class'];
+  }
+  
+  // Préparation des data attributes
+  $speed    = esc_attr($atts['speed']);
+  $reverse  = filter_var($atts['reverse'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $loop     = filter_var($atts['loop'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $autoplay = filter_var($atts['autoplay'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $trigger_sel = !empty($atts['hover_trigger']) ? $atts['hover_trigger'] : '';
+  
+  $persist_end = filter_var($atts['persist_end'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+  $trigger_type = in_array($atts['trigger'], ['hover', 'scroll']) ? $atts['trigger'] : 'hover';
+  $full_width = filter_var($atts['full_width'], FILTER_VALIDATE_BOOLEAN);
+
+  // Style calculations
+  $style = '';
+  if ($full_width) {
+      $style = 'width: 100%; height: auto;';
+  } else {
+      $style = 'width:' . esc_attr($atts['width']) . 'px;height:' . esc_attr($atts['height']) . 'px;';
+  }
+
+  ob_start(); 
+  
+  // Wrapper lien (ouverture)
+  if (!empty($atts['link'])) {
+    echo '<a href="' . esc_url($atts['link']) . '" class="lottie-hover-link">';
+  }
+  ?>
+    <div
+      id="<?php echo esc_attr($container_id); ?>"
+      class="<?php echo esc_attr($classes); ?>"
+      style="<?php echo $style; ?>"
+      data-src="<?php echo esc_url($src_url); ?>"
+      data-speed="<?php echo $speed; ?>"
+      data-reverse="<?php echo $reverse; ?>"
+      data-loop="<?php echo $loop; ?>"
+      data-autoplay="<?php echo $autoplay; ?>"
+      data-hover-trigger="<?php echo $trigger_sel; ?>"
+      data-persist-end="<?php echo $persist_end; ?>"
+      data-trigger="<?php echo $trigger_type; ?>"
+      data-full-width="<?php echo $full_width ? 'true' : 'false'; ?>">
+    </div>
+  <?php
+  
+  // Wrapper lien (fermeture)
+  if (!empty($atts['link'])) {
+    echo '</a>';
+  }
+
+  return ob_get_clean();
+}
+
+add_shortcode('lottie_hover', 'up_lottie_hover_shortcode');
+
+
 ]]></js_code>
-      <scss_code><![CDATA[// SCSS facultatif pour le shortcode hello
-.hello-shortcode { color: #333; }
-]]></scss_code>
+      <scss_code><![CDATA[]]></scss_code>
+      <readme_code><![CDATA[# Shortcode Lottie Hover
+
+Ce shortcode permet d'afficher une animation Lottie (.json) qui se joue au survol de la souris (hover). Il gère également la lecture inversée (reverse) lorsque la souris quitte l'élément, ainsi que d'autres options de lecture.
+
+## Utilisation de base
+
+Le paramètre `src` est obligatoire.
+
+```shortcode
+[lottie_hover src="mon-animation.json"]
+```
+
+Si le fichier JSON se trouve dans le dossier `assets/lotties/` de votre thème, vous pouvez simplement indiquer le nom du fichier. Le chemin complet sera généré automatiquement.
+
+Si vous souhaitez utiliser une URL externe ou absolue, c'est également possible :
+
+```shortcode
+[lottie_hover src="https://assets10.lottiefiles.com/packages/lf20_w51pcehl.json"]
+```
+
+## Paramètres disponibles
+
+| Paramètre       | Description                                                                 | Valeur par défaut |
+| :-------------- | :-------------------------------------------------------------------------- | :---------------- |
+| `src`           | Chemin du fichier JSON (relatif à `theme/assets/lotties/` ou URL absolue).  | `''` (vide)       |
+| `width`         | Largeur du conteneur en pixels. Ignoré si `full_width="true"`.              | `200`             |
+| `height`        | Hauteur du conteneur en pixels. Ignoré si `full_width="true"`.              | `200`             |
+| `speed`         | Vitesse de lecture (1 = normale, 2 = 2x, etc.).                             | `1`               |
+| `reverse`       | Si `true`, joue à l'envers quand on quitte le survol (trigger hover).       | `true`            |
+| `loop`          | Si `true`, l'animation boucle indéfiniment.                                 | `false`           |
+| `autoplay`      | Si `true`, l'animation démarre toute seule au chargement.                   | `false`           |
+| `class`         | Classes CSS à ajouter au conteneur.                                         | `''`              |
+| `id`            | ID CSS à ajouter au conteneur.                                              | `''`              |
+| `link`          | URL vers laquelle pointer si on clique sur l'animation.                     | `''`              |
+| `hover_trigger` | Sélecteur CSS de l'élément qui déclenche le survol (ex: `.card`).           | `''` (lui-même)   |
+| `persist_end`   | Si `true`, l'animation reste sur la dernière image à la fin (trigger hover).| `true`            |
+| `trigger`       | Mode de déclenchement : `hover` ou `scroll`.                                | `hover`           |
+| `full_width`    | Si `true`, le conteneur prend 100% de la largeur disponible.                | `false`           |
+
+## Exemples avancés
+
+### Animation avec déclencheur externe
+
+Vous pouvez déclencher l'animation en survolant un autre élément (par exemple, le parent `.mon-card`).
+
+```shortcode
+<div class="mon-card">
+  <h3>Titre de la carte</h3>
+  [lottie_hover src="icon.json" hover_trigger=".mon-card"]
+</div>
+```
+
+### Animation avec lien et classe CSS personnalisée
+
+```shortcode
+[lottie_hover src="icon-home.json" link="https://mon-site.com/accueil" class="my-custom-icon"]
+```
+
+### Animation rapide avec lecture inversée
+
+```shortcode
+[lottie_hover src="logo.json" width="150" height="150" speed="2" reverse="true"]
+```
+
+### Animation en boucle (sans interaction hover)
+
+Pour une animation qui tourne en boucle sans attendre le survol :
+
+```shortcode
+[lottie_hover src="loader.json" loop="true" autoplay="true"]
+```
+
+## Fonctionnement technique
+
+1.  **PHP** : Le shortcode (`shortcode-lotties-hover.php`) génère un conteneur `div` avec des attributs `data-*` correspondants aux paramètres.
+2.  **JS** : Le script `assets/js/lottie-hover.js` est chargé (avec la librairie `lottie-web` en dépendance). Il parcourt tous les conteneurs `.lottie-hover-container`, initialise les animations Lottie et attache les écouteurs d'événements (`mouseenter`/`mouseleave`) selon la configuration.
+]]></readme_code>
       <generate_php_file><![CDATA[1]]></generate_php_file>
-      <generate_css_file><![CDATA[1]]></generate_css_file>
-      <generate_js_file><![CDATA[0]]></generate_js_file>
+      <generate_css_file><![CDATA[0]]></generate_css_file>
+      <generate_js_file><![CDATA[1]]></generate_js_file>
       <generate_scss_file><![CDATA[0]]></generate_scss_file>
-      <generate_file><![CDATA[1]]></generate_file>
+      <generate_readme_file><![CDATA[1]]></generate_readme_file>
+      <generate_file><![CDATA[]]></generate_file>
     </meta>
   </item>
 </shortcodes>

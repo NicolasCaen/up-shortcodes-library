@@ -159,6 +159,7 @@ function up_sl_generate_files(int $post_id): void {
     $php_code   = (string) get_post_meta($post_id, '_up_sl_php_code', true);
     $js_code    = (string) get_post_meta($post_id, '_up_sl_js_code', true);
     $scss_code  = (string) get_post_meta($post_id, '_up_sl_scss_code', true);
+    $readme_code = (string) get_post_meta($post_id, '_up_sl_readme_code', true);
     $css_compiled = (string) get_post_meta($post_id, '_up_sl_compiled_css', true);
 
     // Flags de génération
@@ -166,6 +167,7 @@ function up_sl_generate_files(int $post_id): void {
     $should_generate_js   = (bool) get_post_meta($post_id, '_up_sl_generate_js_file', true);
     $should_generate_css  = (bool) get_post_meta($post_id, '_up_sl_generate_css_file', true);
     $should_generate_scss = (bool) get_post_meta($post_id, '_up_sl_generate_scss_file', true);
+    $should_generate_readme = (bool) get_post_meta($post_id, '_up_sl_generate_readme_file', true);
 
     // Déterminer le mode: sous-dossier par shortcode, ou non
     $settings = up_sl_get_settings();
@@ -178,6 +180,7 @@ function up_sl_generate_files(int $post_id): void {
     // PHP + CSS au même niveau
     $php_path = $base_dir . $base . '.php';
     $css_path = $base_dir . $base . '.css';
+    $readme_path = $base_dir . 'README.md';
 
     // Dossiers assets (JS/SCSS) dépendent de l'option wrap
     $assets_dir = $wrap
@@ -212,6 +215,11 @@ function up_sl_generate_files(int $post_id): void {
     // CSS (compilé) — au même niveau que le PHP
     if ($should_generate_css && $css_compiled !== '') {
         file_put_contents($css_path, $css_compiled);
+    }
+
+    // README.md
+    if ($should_generate_readme && $readme_code !== '') {
+        file_put_contents($readme_path, $readme_code);
     }
 }
 

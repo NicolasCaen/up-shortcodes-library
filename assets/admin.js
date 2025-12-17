@@ -21,6 +21,7 @@ jQuery(document).ready(function($){
   initEditor('#up_sl_php_code', s.php || { codemirror: { mode: 'text/x-php' } }, 'text/x-php');
   initEditor('#up_sl_js_code', s.js || { codemirror: { mode: 'javascript' } }, 'javascript');
   initEditor('#up_sl_scss_code', s.scss || { codemirror: { mode: 'text/scss' } }, 'text/scss');
+  initEditor('#up_sl_readme_code', s.md || { codemirror: { mode: 'text/markdown' } }, 'text/markdown');
 
   // Aide UX: préfixer automatiquement le nom par "shortcode-" si manquant
   $(document).on('blur', '#up_sl_file_name', function(){

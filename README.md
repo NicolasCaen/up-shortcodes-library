@@ -118,6 +118,12 @@ Ce plugin est fourni dans le cadre du projet et peut être adapté selon vos bes
 
 ## Changelog
 
+### 1.2.0 — 2025-12-17
+- Documentation: Ajout d'un éditeur Markdown pour rédiger un README.md associé au shortcode.
+- Génération: Option pour générer le fichier README.md dans le dossier du shortcode.
+- Workflow: Case à cocher "Ajouter aux shortcodes du plugin" pour sauvegarder automatiquement le shortcode dans le XML par défaut du plugin (`defaults/up-shortcodes-default.xml`).
+- Import/Export: Prise en charge du champ README et des nouveaux flags de génération dans l'export XML.
+
 ### 1.1.0 — 2025-09-26
 - Nouvelles options de sortie: calcul automatique du dossier de génération via `base_location` (thème / mu-plugins / ce plugin / personnalisé) et `relative_subdir`.
 - UI réglages: le champ « Chemin personnalisé » est masqué/désactivé sauf si « Chemin personnalisé » est sélectionné.

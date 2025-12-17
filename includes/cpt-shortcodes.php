@@ -72,6 +72,7 @@ function up_sl_render_shortcode_meta_box(WP_Post $post): void {
     $js_code   = (string) get_post_meta($post->ID, '_up_sl_js_code', true);
     $scss_code = (string) get_post_meta($post->ID, '_up_sl_scss_code', true);
     $css_code  = (string) get_post_meta($post->ID, '_up_sl_compiled_css', true);
+    $readme_code = (string) get_post_meta($post->ID, '_up_sl_readme_code', true);
     ?>
     <p>
         <label for="up_sl_php_code"><strong><?php esc_html_e('Code PHP du shortcode', 'up-shortcodes-library'); ?></strong></label>
@@ -98,6 +99,14 @@ function up_sl_render_shortcode_meta_box(WP_Post $post): void {
     </p>
     <textarea id="up_sl_css_code" rows="8" style="width:100%;font-family:monospace;" spellcheck="false" readonly><?php echo esc_textarea($css_code); ?></textarea>
     <p class="description"><?php esc_html_e('Aperçu du CSS compilé à la dernière sauvegarde.', 'up-shortcodes-library'); ?></p>
+
+    <hr>
+
+    <p>
+        <label for="up_sl_readme_code"><strong><?php esc_html_e('README.md (optionnel)', 'up-shortcodes-library'); ?></strong></label>
+    </p>
+    <textarea id="up_sl_readme_code" name="up_sl_readme_code" rows="8" style="width:100%;font-family:monospace;" spellcheck="false"><?php echo esc_textarea($readme_code); ?></textarea>
+    <p class="description"><?php esc_html_e('Documentation du shortcode (Markdown).', 'up-shortcodes-library'); ?></p>
     <?php
 }
 
@@ -106,6 +115,8 @@ function up_sl_render_shortcode_settings_meta_box(WP_Post $post): void {
     $generate_css = (bool) get_post_meta($post->ID, '_up_sl_generate_css_file', true);
     $generate_js  = (bool) get_post_meta($post->ID, '_up_sl_generate_js_file', true);
     $generate_scss = (bool) get_post_meta($post->ID, '_up_sl_generate_scss_file', true);
+    $generate_readme = (bool) get_post_meta($post->ID, '_up_sl_generate_readme_file', true);
+    $add_to_defaults = (bool) get_post_meta($post->ID, '_up_sl_add_to_defaults', true);
     $output_directory = up_sl_get_output_directory();
     $slug = $post->post_name ?: __('(slug non défini)', 'up-shortcodes-library');
     $file_name = (string) get_post_meta($post->ID, '_up_sl_file_name', true);
@@ -139,6 +150,21 @@ function up_sl_render_shortcode_settings_meta_box(WP_Post $post): void {
             <?php esc_html_e('Générer le fichier SCSS', 'up-shortcodes-library'); ?>
         </label>
     </p>
+    <p>
+        <label>
+            <input type="checkbox" name="up_sl_generate_readme_file" value="1" <?php checked($generate_readme); ?>>
+            <?php esc_html_e('Générer le fichier README.md', 'up-shortcodes-library'); ?>
+        </label>
+    </p>
+    <hr>
+    <p>
+        <label>
+            <input type="checkbox" name="up_sl_add_to_defaults" value="1" <?php checked($add_to_defaults); ?>>
+            <strong><?php esc_html_e('Ajouter aux shortcodes du plugin (XML)', 'up-shortcodes-library'); ?></strong>
+        </label>
+        <br>
+        <small class="description"><?php esc_html_e('Si coché, sauvegarde également ce shortcode dans le fichier XML par défaut du plugin.', 'up-shortcodes-library'); ?></small>
+    </p>
     <p class="description">
         <?php
         printf(
@@ -169,11 +195,14 @@ function up_sl_save_shortcode_meta(int $post_id): void {
     $php_code  = isset($_POST['up_sl_php_code']) ? wp_unslash((string) $_POST['up_sl_php_code']) : '';
     $js_code   = isset($_POST['up_sl_js_code']) ? wp_unslash((string) $_POST['up_sl_js_code']) : '';
     $scss_code = isset($_POST['up_sl_scss_code']) ? wp_unslash((string) $_POST['up_sl_scss_code']) : '';
+    $readme_code = isset($_POST['up_sl_readme_code']) ? wp_unslash((string) $_POST['up_sl_readme_code']) : '';
     $file_name_raw = isset($_POST['up_sl_file_name']) ? (string) $_POST['up_sl_file_name'] : '';
     $generate_php  = isset($_POST['up_sl_generate_php_file']) ? '1' : '0';
     $generate_css  = isset($_POST['up_sl_generate_css_file']) ? '1' : '0';
     $generate_js   = isset($_POST['up_sl_generate_js_file']) ? '1' : '0';
     $generate_scss = isset($_POST['up_sl_generate_scss_file']) ? '1' : '0';
+    $generate_readme = isset($_POST['up_sl_generate_readme_file']) ? '1' : '0';
+    $add_to_defaults = isset($_POST['up_sl_add_to_defaults']) ? '1' : '0';
 
     // Déterminer et sanitiser le nom de fichier de base
     $slug = get_post_field('post_name', $post_id) ?: '';
@@ -182,11 +211,14 @@ function up_sl_save_shortcode_meta(int $post_id): void {
     update_post_meta($post_id, '_up_sl_php_code', $php_code);
     update_post_meta($post_id, '_up_sl_js_code', $js_code);
     update_post_meta($post_id, '_up_sl_scss_code', $scss_code);
+    update_post_meta($post_id, '_up_sl_readme_code', $readme_code);
     update_post_meta($post_id, '_up_sl_file_name', $file_name);
     update_post_meta($post_id, '_up_sl_generate_php_file', $generate_php);
     update_post_meta($post_id, '_up_sl_generate_css_file', $generate_css);
     update_post_meta($post_id, '_up_sl_generate_js_file', $generate_js);
     update_post_meta($post_id, '_up_sl_generate_scss_file', $generate_scss);
+    update_post_meta($post_id, '_up_sl_generate_readme_file', $generate_readme);
+    update_post_meta($post_id, '_up_sl_add_to_defaults', $add_to_defaults);
 
     // Compiler le SCSS en CSS (si possible) et sauvegarder en méta pour aperçu
     $compiled_css = up_sl_compile_scss($scss_code);
@@ -196,4 +228,9 @@ function up_sl_save_shortcode_meta(int $post_id): void {
     update_post_meta($post_id, '_up_sl_compiled_css', $compiled_css);
 
     up_sl_generate_files($post_id);
+
+    // Sauvegarder dans les defaults si demandé
+    if ($add_to_defaults === '1') {
+        up_sl_save_to_defaults($post_id);
+    }
 }

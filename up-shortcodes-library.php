@@ -2,7 +2,7 @@
 /**
  * Plugin Name: UP Shortcodes Library
  * Description: Gestion des shortcodes via un CPT avec génération automatique de fichiers.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Nicolas Gehin
  * Text Domain: up-shortcodes-library
  */
@@ -11,7 +11,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('UP_SL_VERSION', '1.1.0');
+define('UP_SL_VERSION', '1.2.0');
 define('UP_SL_PATH', plugin_dir_path(__FILE__));
 define('UP_SL_URL', plugin_dir_url(__FILE__));
 
@@ -74,6 +74,8 @@ add_action('admin_enqueue_scripts', function($hook){
         $scss_settings = wp_enqueue_code_editor(['type' => 'text/scss', 'codemirror' => ['theme' => 'monokai']]);
         // Enqueue CodeMirror for JS
         $js_settings = wp_enqueue_code_editor(['type' => 'javascript', 'codemirror' => ['theme' => 'monokai']]);
+        // Enqueue CodeMirror for Markdown
+        $md_settings = wp_enqueue_code_editor(['type' => 'text/markdown', 'codemirror' => ['theme' => 'monokai']]);
 
         wp_enqueue_script('code-editor');
         wp_enqueue_style('code-editor');
@@ -86,6 +88,7 @@ add_action('admin_enqueue_scripts', function($hook){
             'php' => $php_settings,
             'scss' => $scss_settings,
             'js' => $js_settings,
+            'md' => $md_settings,
         ]);
     }
 });
